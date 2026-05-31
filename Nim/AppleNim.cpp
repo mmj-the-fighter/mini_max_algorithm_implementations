@@ -10,7 +10,7 @@
 
 #include <iostream>
 using namespace std;
-//#define APPLE_NIM_DEBUG
+#define APPLE_NIM_DEBUG
 #define APPLE_NIM_INFINITY 32000
 #define BESTSCORE 1000
 enum { NONE = -1, COMPUTER = 0, HUMAN = 1 };
@@ -32,7 +32,7 @@ public:
 private:
 	int FindBestMoveWithModuloOperator(int numTotalApples);//best method, use this function in production code
 	int FindBestMoveWithSearchTree(int numTotalApples);//just for minimax algorithm demonstration, don't use this function in production code
-	int MiniMax(int numTotalApples, bool maximizingPlayer, int depth);
+	int MiniMax(int numTotalApples, bool maximizingPlayer, int depth, int alpha, int beta);
 };
 
 AppleNim::AppleNim(void)
@@ -123,7 +123,7 @@ int AppleNim::FindBestMoveWithSearchTree(int numTotalApples)
 #ifdef APPLE_NIM_DEBUG
 			++m_nodesSearched;
 #endif	
-			int value = MiniMax(numTotalApples, false, 1);
+			int value = MiniMax(numTotalApples, false, 1, -APPLE_NIM_INFINITY, APPLE_NIM_INFINITY);
 			if (value > best) {
 				best = value;
 				bestPick = pick;
@@ -137,7 +137,7 @@ int AppleNim::FindBestMoveWithSearchTree(int numTotalApples)
 	return bestPick;
 }
 
-int AppleNim::MiniMax(int totalApples, bool maximizingPlayer, int depth)
+int AppleNim::MiniMax(int totalApples, bool maximizingPlayer, int depth, int alpha, int beta)
 {
 #ifdef APPLE_NIM_DEBUG
 	if (depth > m_maxDepth)
@@ -163,12 +163,17 @@ int AppleNim::MiniMax(int totalApples, bool maximizingPlayer, int depth)
 #ifdef APPLE_NIM_DEBUG
 				++m_nodesSearched;
 #endif	
-				int value = MiniMax(totalApples, false, depth + 1);
+				int value = MiniMax(totalApples, false, depth + 1, alpha, beta);
 				if (value > best) {
 					best = value;
 				}
 			}
 			totalApples = totalApples + pick;
+			if (best > alpha) {
+				alpha = best;
+			}
+			if (alpha >= beta)
+				break;
 		}
 		return best;
 	}
@@ -181,12 +186,18 @@ int AppleNim::MiniMax(int totalApples, bool maximizingPlayer, int depth)
 #ifdef APPLE_NIM_DEBUG
 				++m_nodesSearched;
 #endif	
-				int value = MiniMax(totalApples, true, depth + 1);
+				int value = MiniMax(totalApples, true, depth + 1, alpha, beta);
 				if (value < best) {
 					best = value;
 				}
 			}
 			totalApples = totalApples + pick;
+			if (best < beta) {
+				beta = best;
+			}
+			if (beta <= alpha)
+				break;
+
 		}
 		return best;
 	}
